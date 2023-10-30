@@ -17,7 +17,7 @@ const sendOTP = async (req, res) => {
             });
         }
 
-        let otp = otpGenerator.generate(6, {
+        let otp = otpGenerator.generate(4, {
             upperCaseAlphabets: false,
             lowerCaseAlphabets: false,
             specialChars: false,
@@ -26,10 +26,18 @@ const sendOTP = async (req, res) => {
         let result = await OTP.findOne({ otp: otp });
 
         while (result) {
-            otp = otpGenerator.generate(6, {
+            otp = otpGenerator.generate(4, {
                 upperCaseAlphabets: false,
             });
             result = await OTP.findOne({ otp: otp });
+        }
+        const allEmailOTPs = await OTP.find({ email: email });
+        console.log({ allEmailOTPs });
+        if (allEmailOTPs?.length >= 3) {
+            return res.status(401).json({
+                type: 'error',
+                message: '3 attempts exhausted, try in another 15 minutes',
+            });
         }
         const otpPayload = { email, otp };
         const otpBody = await OTP.create(otpPayload);
@@ -46,7 +54,7 @@ const sendOTP = async (req, res) => {
 
 const registerUser = async (req, res) => {
     try {
-        const { name, email, password, otp, pic } = req.body;
+        const { name, email, password, otp, pic, phone } = req.body;
 
         if (!name || !email || !password || !otp) {
             return res.status(403).json({
@@ -86,6 +94,7 @@ const registerUser = async (req, res) => {
             email,
             password: hashedPassword,
             pic,
+            phone
         });
 
         return res.status(201).json({
@@ -102,6 +111,7 @@ const registerUser = async (req, res) => {
 
 const login = async (req, res) => {
     try {
+        console.log({ body: req.body })
         const { email, password } = req.body;
         if (!email || !password) {
             return res.status(403).json({
