@@ -2,12 +2,13 @@ const nodemailer = require('nodemailer');
 
 const mailSender = async (email, title, body) => {
     try {
-        console.log({ email })
         const transporter = nodemailer.createTransport({
-            service: 'Outlook', // you can also use 'Hotmail' or 'Live' here
+            host: 'in-v3.mailjet.com',
+            port: 587, // Port for TLS
+            secure: false, // Use TLS (true for 465, false for other ports)
             auth: {
-                user: process.env.EMAIL,
-                pass: process.env.PASS,
+                user: process.env.MAILJETAPIKEY,
+                pass: process.env.MAILJETSECRETKEY,
             },
         });
 

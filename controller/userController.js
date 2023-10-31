@@ -36,7 +36,7 @@ const sendOTP = async (req, res) => {
         if (allEmailOTPs?.length >= 3) {
             return res.status(401).json({
                 type: 'error',
-                message: '3 attempts exhausted, try in another 15 minutes',
+                message: '3 attempts exhausted, try again in another 15 minutes',
             });
         }
         const otpPayload = { email, otp };
@@ -72,6 +72,7 @@ const registerUser = async (req, res) => {
         }
 
         const response = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
+
         if (response.length === 0 || otp !== response[0].otp) {
             return res.status(400).json({
                 type: 'error',
