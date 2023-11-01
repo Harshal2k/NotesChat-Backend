@@ -54,7 +54,7 @@ const sendOTP = async (req, res) => {
 
 const registerUser = async (req, res) => {
     try {
-        const { name, email, password, otp, pic, phone } = req.body;
+        const { name, email, password, otp, pic, phone, picName } = req.body;
 
         if (!name || !email || !password || !otp) {
             return res.status(403).json({
@@ -95,8 +95,9 @@ const registerUser = async (req, res) => {
             email,
             password: hashedPassword,
             pic,
-            phone
-        });
+            phone,
+            picName
+        }); 
 
         return res.status(201).json({
             type: 'success',
