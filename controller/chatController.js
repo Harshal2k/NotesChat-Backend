@@ -11,6 +11,16 @@ const accessChat = async (req, res) => {
             return res.status(400).json({ type: 'error', message: 'userId is required' });
         }
 
+        if (userId === String(req?.user?._id)) {
+            return res.status(400).json({ type: 'error', message: 'userId cannot be current users id' });
+        }
+
+        let userExists = await User.find({ _id: userId });
+
+        if (userExists?.length === 0) {
+            return res.status(400).json({ type: 'error', message: 'User does not exists' });
+        }
+
         let isChat = await Chat.find({
             isGroupChat: false,
             $and: [
@@ -31,7 +41,7 @@ const accessChat = async (req, res) => {
             let chatData = {
                 name: "sender",
                 isGroupChat: false,
-                users: [req.user._id, userId]
+                users: [userId,req.user._id]
             }
             let newChat = await Chat.create(chatData);
 
