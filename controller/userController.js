@@ -97,7 +97,7 @@ const registerUser = async (req, res) => {
             pic,
             phone,
             picName
-        }); 
+        });
 
         return res.status(201).json({
             type: 'success',
@@ -113,7 +113,6 @@ const registerUser = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-        console.log({ body: req.body })
         const { email, password } = req.body;
         if (!email || !password) {
             return res.status(403).json({
@@ -172,5 +171,32 @@ const userInfo = async (req, res) => {
     }
 }
 
+const findUsers = async (req, res) => {
+    try {
+        console.log(req.body)
+        const { email, phone, username } = req.body;
+        if (!email && !phone && !username) {
+            return res.status(400).json({
+                type: 'error',
+                message: 'Email or Phone or Username is required',
+            });
+        }
 
-module.exports = { registerUser, sendOTP, login, getAllUsers, userInfo }
+        if (email) {
+            const users = await User.find({ email: { $eq: email }, _id: { $ne: req.user._id } });
+            return res.status(200).json({ type: 'Success', users: users || [] })
+        } else if (phone) {
+            const users = await User.find({ phone: { $eq: phone }, _id: { $ne: req.user._id } });
+            return res.status(200).json({ type: 'Success', users: users || [] })
+        } else {
+            const users = await User.find({ name: { '$regex': username, '$options': 'i' }, _id: { $ne: req.user._id } });
+            return res.status(200).json({ type: 'Success', users: users || [] })
+        }
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({ type: 'error', message: error.message });
+    }
+}
+
+
+module.exports = { registerUser, sendOTP, login, getAllUsers, userInfo, findUsers }
