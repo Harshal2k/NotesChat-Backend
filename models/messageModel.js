@@ -5,6 +5,8 @@ const messageSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     },
+    subject: { type: String, trim: true },
+    pages: [{ type: String }],
     content: {
         type: String,
         trim: true
