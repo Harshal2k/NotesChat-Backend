@@ -4,15 +4,17 @@ const User = require("../models/userModel");
 
 const sendMessage = async (req, res) => {
     try {
-        const { content, chatId } = req.body;
+        const { subject, chatId, pages } = req.body;
 
-        if (!content || !chatId) {
-            return res.status(400).json({ type: 'error', message: 'content and chatId is required' });
+        if (!subject || !chatId || !pages) {
+            return res.status(400).json({ type: 'error', message: 'subject, pages and chatId is required' });
         }
+
         let msgBody = {
             sender: req.user._id,
-            content: content,
-            chat: chatId
+            subject: subject,
+            chat: chatId,
+            pages: pages
         }
 
         let message = await Message.create(msgBody);
