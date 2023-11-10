@@ -7,10 +7,12 @@ const messageSchema = mongoose.Schema({
     },
     subject: { type: String, trim: true },
     pages: [{ type: String }],
-    content: {
-        type: String,
-        trim: true
+    updateMessage: {
+        type: Boolean,
+        default: false
     },
+    updatedMsgId: { type: String, trim: true },
+    updateMessageContent: { type: String, trim: true },
     chat: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Chat"

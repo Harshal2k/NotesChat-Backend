@@ -52,4 +52,32 @@ const allMessages = async (req, res) => {
     }
 }
 
-module.exports = { sendMessage, allMessages };
+const updateMessage = async (req, res) => {
+    try {
+        const { pages, messageId } = req.body;
+
+        if (!messageId || !pages) {
+            return res.status(400).json({ type: 'error', message: 'messageId and pages are required' });
+        }
+
+        const updatedMessage = await Message.findByIdAndUpdate(messageId, { pages: pages }, { new: true });
+
+        let msgBody = {
+            sender: req.user._id,
+            chat: updatedMessage.chat,
+            updatedMsgId: messageId,
+            updateMessage: true,
+            updateMessageContent: `${updateMessage?.subject} Notes have been updated`
+        }
+
+        let message = await Message.create(msgBody);
+
+        return res.status(200).json({ type: 'success', message: 'Messages updated successfuly', message: updatedMessage, newMessage: message })
+
+    } catch (error) {
+        console.log({ error });
+        return res.status(500).json({ type: 'error', message: error.message })
+    }
+}
+
+module.exports = { sendMessage, allMessages, updateMessage };
