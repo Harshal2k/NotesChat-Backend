@@ -90,13 +90,14 @@ const registerUser = async (req, res) => {
             });
         }
 
+
         const newUser = await User.create({
             name,
             email,
             password: hashedPassword,
-            pic,
+            pic: pic || "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg",
             phone,
-            picName
+            picName: picName || "anonymous-avatar-icon-25.jpg"
         });
 
         return res.status(201).json({
@@ -198,5 +199,40 @@ const findUsers = async (req, res) => {
     }
 }
 
+const updateUser = async (req, res) => {
+    try {
 
-module.exports = { registerUser, sendOTP, login, getAllUsers, userInfo, findUsers }
+        const { phone, username, pic, picName } = req.body;
+        if (!pic && !phone && !username) {
+            return res.status(400).json({
+                type: 'error',
+                message: 'Email or Phone or Profile Picture is required',
+            });
+        }
+
+        let body = {}
+
+        if (username) {
+            body["name"] = username;
+        }
+
+        if (phone) {
+            body["phone"] = phone;
+        }
+
+        if (pic) {
+            body["pic"] = pic;
+            body["picName"] = picName;
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(req?.user?._id, body, { new: true });
+
+        return res.status(200).json({ type: 'Success', updatedUser: updatedUser })
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({ type: 'error', message: error.message });
+    }
+}
+
+
+module.exports = { registerUser, sendOTP, login, getAllUsers, userInfo, findUsers, updateUser }

@@ -67,10 +67,14 @@ const updateMessage = async (req, res) => {
             chat: updatedMessage.chat,
             updatedMsgId: messageId,
             updateMessage: true,
-            updateMessageContent: `${updateMessage?.subject} Notes have been updated`
+            updateMessageContent: `${updatedMessage?.subject} Notes have been updated`
         }
 
         let message = await Message.create(msgBody);
+
+        await Chat.findByIdAndUpdate(updatedMessage.chat, {
+            latestMessage: message
+        })
 
         return res.status(200).json({ type: 'success', message: 'Messages updated successfuly', message: updatedMessage, newMessage: message })
 
