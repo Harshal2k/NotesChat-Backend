@@ -17,12 +17,13 @@ const chatSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
     },
+    messageCount: { type: String, trim: true, default: '0' }
 },
     {
         timestamps: true,
     }
 )
 
-const Chat = mongoose.model("Chat",chatSchema);
+const Chat = mongoose.model("Chat", chatSchema);
 
 module.exports = Chat;

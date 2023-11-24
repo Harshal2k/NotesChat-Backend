@@ -234,5 +234,36 @@ const updateUser = async (req, res) => {
     }
 }
 
+const updateFCM = async (req, res) => {
+    try {
+        const { userId, fcm } = req.body;
+        if (!(userId)) {
+            return res.status(400).json({
+                type: 'error',
+                message: 'UserId and FCM is required',
+            });
+        }
 
-module.exports = { registerUser, sendOTP, login, getAllUsers, userInfo, findUsers, updateUser }
+
+        const userData = await User.findById(userId);
+
+        if (!userData?._id) {
+            return res.status(400).json({
+                type: 'error',
+                message: 'User does not exists',
+            });
+        }
+
+        const newFCM = userData?.fcm ? [...new Set([...userData?.fcm, fcm])] : [...new Set([fcm])]
+
+        const updatedUser = await User.findByIdAndUpdate(userId, { fcm: newFCM }, { new: true });
+
+        return res.status(200).json({ type: 'Success', updatedUser: updatedUser })
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({ type: 'error', message: error.message });
+    }
+}
+
+
+module.exports = { registerUser, sendOTP, login, getAllUsers, userInfo, findUsers, updateUser, updateFCM }

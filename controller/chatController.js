@@ -1,6 +1,7 @@
 const Chat = require("../models/chatModel");
 const User = require("../models/userModel");
 const isAdmin = require("../utility/isAdmin");
+const admin = require('firebase-admin');
 
 
 const accessChat = async (req, res) => {
@@ -20,7 +21,7 @@ const accessChat = async (req, res) => {
         if (userExists?.length === 0) {
             return res.status(400).json({ type: 'error', message: 'User does not exists' });
         }
-
+        let socket = req.io;
         let isChat = await Chat.find({
             isGroupChat: false,
             $and: [
@@ -41,11 +42,42 @@ const accessChat = async (req, res) => {
             let chatData = {
                 name: "sender",
                 isGroupChat: false,
-                users: [userId,req.user._id]
+                users: [userId, req.user._id]
             }
             let newChat = await Chat.create(chatData);
+            console.log({ newChat });
 
             const fullChat = await Chat.find({ _id: newChat._id }).populate("users", "-password");
+
+            fullChat[0]?.users?.forEach(user => {
+                if (socket && req.userSockets[user._id] && String(user._id) != String(req?.user?._id)) {
+                    socket.to(req.userSockets[user._id]).emit("createChat", {chat:fullChat})
+                }
+                if (String(user._id) != String(req?.user?._id)) {
+                    user?.fcm?.forEach(token => {
+                        const message = {
+                            notification: {
+                                title: `You have a new Notes buddy`,
+                                body: `${user?.name||''} has connected with you`,
+                            },
+                            token: token,
+                        };
+    
+                        try {
+                            admin.messaging().send(message)
+                                .then((response) => {
+                                    console.log('Successfully sent message:', response);
+                                })
+                                .catch((error) => {
+                                    console.error('Error sending message:', error);
+                                });
+                        } catch (error) {
+    
+                        }
+                    })
+                }
+            });
+
             return res.status(200).json({ type: 'success', message: 'Chat Created', chat: fullChat })
         }
 
@@ -58,6 +90,9 @@ const accessChat = async (req, res) => {
 
 const allChats = async (req, res) => {
     try {
+        console.log("innnnnnnnnn")
+        console.log({ req: req.userSockets })
+        let socket = req.io;
         let allChats = await Chat.find(
             { users: { $elemMatch: { $eq: req.user._id } } }
         ).populate("users", "-password")
@@ -69,6 +104,9 @@ const allChats = async (req, res) => {
             path: "latestMessage.sender",
             select: "name email pic"
         });
+        if (socket) {
+            socket.to(req.userSockets[req.user._id]).emit("allChats", "in all chats")
+        }
         return res.status(200).json({ type: 'success', message: 'Chats Found', chats: allChats })
     } catch (error) {
         console.log({ error });
